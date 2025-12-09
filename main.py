@@ -13,6 +13,7 @@ def main():
     # Parse arguments from commandline
     parser = argparse.ArgumentParser(description="Chatbot")
     parser.add_argument("prompt", type=str, help="User prompt")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     args = parser.parse_args()
     # Now we can access `args.prompt`
 
@@ -43,9 +44,11 @@ def main():
     candidate_token_count = response.usage_metadata.candidates_token_count
 
     # Print out response:
-    print(f"User prompt: {messages}")
-    print(f"Prompt tokens: {prompt_token_count}")
-    print(f"Response tokens: {candidate_token_count}")
+    # Verbose case:
+    if args.verbose:
+        print(f"User prompt: {messages}")
+        print(f"Prompt tokens: {prompt_token_count}")
+        print(f"Response tokens: {candidate_token_count}")
     print(f"Response:")
     print(response.text)
 

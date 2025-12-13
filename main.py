@@ -3,12 +3,20 @@ import argparse
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from prompts import SYSTEM_PROMPT
+from functions.get_files_info import schema_get_files_info
 
 def main():
     # Load environment variables from .env file
     load_dotenv()
     
     print("Hello from aiagent!")
+    print(f"System Prompt: {SYSTEM_PROMPT}")
+
+    # Generate list of possible tools
+    available_functions = types.Tool(
+    function_declarations=[schema_get_files_info],
+    )
 
     # Parse arguments from commandline
     parser = argparse.ArgumentParser(description="Chatbot")
@@ -32,7 +40,9 @@ def main():
 
     # Get a response from client
     response = client.models.generate_content(
-    model='gemini-2.5-flash', contents=messages
+        model='gemini-2.5-flash', 
+        contents=messages,
+        config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT, tools=[available_functions])
     )
 
     # Verify that the usage metadata property is not None.
@@ -50,7 +60,13 @@ def main():
         print(f"Prompt tokens: {prompt_token_count}")
         print(f"Response tokens: {candidate_token_count}")
     print(f"Response:")
-    print(response.text)
+
+    # Check if a function call was returned
+    if response.function_calls:
+        for function_call_part in response.function_calls:
+            print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+    else: 
+        print(response.text)
 
 if __name__ == "__main__":
     main()

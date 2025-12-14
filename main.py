@@ -5,6 +5,10 @@ from google import genai
 from google.genai import types
 from prompts import SYSTEM_PROMPT
 from functions.get_files_info import schema_get_files_info
+from functions.get_file_content import schema_get_file_content
+from functions.run_python_file import schema_run_python_file
+from functions.write_files import schema_write_file
+from functions.call_function import call_function
 
 def main():
     # Load environment variables from .env file
@@ -15,7 +19,7 @@ def main():
 
     # Generate list of possible tools
     available_functions = types.Tool(
-    function_declarations=[schema_get_files_info],
+    function_declarations=[schema_get_files_info, schema_get_file_content, schema_run_python_file, schema_write_file],
     )
 
     # Parse arguments from commandline
@@ -61,10 +65,23 @@ def main():
         print(f"Response tokens: {candidate_token_count}")
     print(f"Response:")
 
+    # Initialise a list to hold function responses
+    function_responses = list()
+
     # Check if a function call was returned
     if response.function_calls:
         for function_call_part in response.function_calls:
-            print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+            #print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+            function_call_result = call_function(function_call_part, verbose=args.verbose)
+
+            if not(function_call_result.parts[0].function_response.response):
+                raise Exception("Function call failed to return")
+            
+            function_responses.append(function_call_result.parts[0])
+
+            if args.verbose:
+                print(f"-> {function_call_result.parts[0].function_response.response}")
+
     else: 
         print(response.text)
 

@@ -1,4 +1,5 @@
 import os
+from google.genai import types
 #import config
 
 def write_file(working_directory, file_path, content):
@@ -26,3 +27,21 @@ def get_abs_path(parent, child):
 def is_subdirectory(parent, child):
     parent_abs, child_abs = get_abs_path(parent, child)
     return os.path.commonpath([parent_abs]) == os.path.commonpath([parent_abs, child_abs])
+
+schema_write_file = types.FunctionDeclaration(
+    name="write_file",
+    description="Writes to the file specified with file_path, constrained to the working directory.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="The file path to the file to be written to, relative to the working directory.",
+            ),
+            "content": types.Schema(
+                type=types.Type.STRING,
+                description="Text content to be written to the file",
+            )
+        },
+    ),
+)

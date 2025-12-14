@@ -1,5 +1,6 @@
 import os
-#import config
+from google.genai import types
+
 
 def get_file_content(working_directory, file_path):
     # Check if valid 
@@ -28,3 +29,16 @@ def is_subdirectory(parent, child):
     parent_abs, child_abs = get_abs_path(parent, child)
     return os.path.commonpath([parent_abs]) == os.path.commonpath([parent_abs, child_abs])
 
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Returns the first 10000 characters of the specified file, constrained to the working directory.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="The file path to the file to be read, relative to the working directory.",
+            ),
+        },
+    ),
+)
